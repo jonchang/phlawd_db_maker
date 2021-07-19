@@ -185,6 +185,14 @@ string SQLiteDBController::create_edited_name(string & tfilen){
                 ednm = ednm.replace(" ","_")
 */
 void SQLiteDBController::load_seqs(string div,bool downl){
+    Database conn_tmp(db_name);
+    Query query(conn_tmp);
+    query.get_result("select value from information where name='cursor';" );
+    query.fetch_row();
+    int last_cursor = query.getval();
+    query.free_result();
+    cout << "last cursor:" << last_cursor << endl;
+
     cout << "loading taxonomy" << endl;
     if (downl == true){
         const char * cmd = "wget -nv -N ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz";
@@ -220,6 +228,8 @@ void SQLiteDBController::load_seqs(string div,bool downl){
     int rc = sqlite3_open(db_name.c_str(), &conn);
     char *zErrMsg = 0;
 
+    // always truncate the table prior to starting. regenerating the taxonomy is relatively cheap on updates
+    sqlite3_exec(conn, "delete from taxonomy;", NULL, NULL, NULL);
     sqlite3_exec(conn, "BEGIN TRANSACTION", NULL, NULL, NULL);
     count = 0;
     while(getline(infile2,line)){
@@ -257,8 +267,6 @@ void SQLiteDBController::load_seqs(string div,bool downl){
     sqlite3_close(conn);
 
     cout << "updating left/right values" << endl;
-    Database cppconn(db_name);
-    Query query(cppconn);
     string cmd = "select ncbi_id,parent_ncbi_id from taxonomy where name_class = 'scientific name';";
     query.get_result(cmd);
     while(query.fetch_row()){
@@ -336,7 +344,7 @@ void SQLiteDBController::load_seqs(string div,bool downl){
         string cmd;
         for(int i = 0;i<runall.size();i++){
             bool going = true;
-            int cur = 1;
+            int cur = last_cursor + 1;
             while(going){
             //cmd = "wget ftp://ftp.ncbi.nih.gov/genbank/gb"+runall[i]+"*.seq.gz";
                 string scur = to_string(cur);
@@ -347,6 +355,12 @@ void SQLiteDBController::load_seqs(string div,bool downl){
                 system(cmd.c_str());
                 struct stat buffer;
                 if ((stat(name.c_str(), &buffer) == 0) == false){
+                    // upsert information table with cursor
+                    string sql = "insert into information (id,name,value) values (420,'cursor','";
+                    sql += to_string(cur - 1) + "') on conflict(id) do update set value=excluded.value;";
+                    cout << "updating cursor to " << cur - 1 << endl;
+                    query.get_result(sql);
+                    query.free_result();
                     going = false;
                     break;
                 }
