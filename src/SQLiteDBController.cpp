@@ -193,7 +193,7 @@ string SQLiteDBController::create_edited_name(string & tfilen){
 void SQLiteDBController::load_seqs(string div,bool downl){
     cout << "loading taxonomy" << endl;
     if (downl == true){
-        const char * cmd = "wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz";
+        const char * cmd = "wget -N ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz";
         cout << "downloading with wget" << endl;
         system(cmd);
         cmd = "tar -xzvf taxdump.tar.gz";
