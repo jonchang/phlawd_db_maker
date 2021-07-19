@@ -193,7 +193,7 @@ string SQLiteDBController::create_edited_name(string & tfilen){
 void SQLiteDBController::load_seqs(string div,bool downl){
     cout << "loading taxonomy" << endl;
     if (downl == true){
-        const char * cmd = "wget -N ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz";
+        const char * cmd = "wget -nv -N ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz";
         cout << "downloading with wget" << endl;
         system(cmd);
         cmd = "tar -xzvf taxdump.tar.gz";
@@ -348,7 +348,7 @@ void SQLiteDBController::load_seqs(string div,bool downl){
                 string scur = to_string(cur);
                 string name = "gb"+runall[i]+scur+".seq.gz";
                 string name_ngz = "gb"+runall[i]+scur+".seq";
-                cmd = "wget ftp://ftp.ncbi.nih.gov/genbank/"+name;
+                cmd = "wget -nv ftp://ftp.ncbi.nih.gov/genbank/"+name;
                 cout << "downloading " << name << endl;
                 system(cmd.c_str());
                 struct stat buffer;
@@ -404,13 +404,13 @@ void SQLiteDBController::load_seqs(string div,bool downl){
     cout << "finished loading" << endl;
     
     // get release info
-    cmd = "wget ftp.ncbi.nlm.nih.gov/genbank/README.genbank";
+    cmd = "wget -nv ftp.ncbi.nlm.nih.gov/genbank/README.genbank";
     cout << "getting release info" << endl;
     system(cmd.c_str());
     
     // Zoidberg: grab the version itself too why not?
     // this can be read in at some later point to store in the DB
-    cmd = "wget ftp.ncbi.nlm.nih.gov/genbank/GB_Release_Number";
+    cmd = "wget -nv ftp.ncbi.nlm.nih.gov/genbank/GB_Release_Number";
     system(cmd.c_str());
 }
 
