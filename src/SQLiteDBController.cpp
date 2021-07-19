@@ -62,12 +62,6 @@ inline std::string to_string (const T& t){
 
 bool SQLiteDBController::initiate(){
     bool ret = true;
-    //check to see if the database exists
-    ifstream ifile(db_name.c_str());
-    if(ifile){
-        cout << "the file: "+db_name+" seems to exist" << endl;
-        return false;
-    }
     Database conn(db_name);
     Query query(conn);
     query.get_result("create table taxonomy (id INTEGER PRIMARY KEY,ncbi_id INTEGER,name VARCHAR(255),name_class VARCHAR(32),node_rank VARCHAR(32),parent_ncbi_id INTEGER,edited_name VARCHAR(255),left_value INTEGER,right_value INTEGER);" );
